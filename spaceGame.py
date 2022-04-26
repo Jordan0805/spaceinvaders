@@ -95,6 +95,7 @@ class Ship:
             self.lasers.append(laser)
             self.cool_down_counter = 1
 
+
     def get_width(self):
         return self.ship_img.get_width()
 
@@ -170,12 +171,13 @@ def main():
     FPS = 60
     level = 0
     lives = 5
+    killed = 0
     main_font = pygame.font.SysFont("comicsans", 25)
     lost_font = pygame.font.SysFont("comicsans", 50)
 
     enemies = []
-    wave_length = 5
-    enemy_vel = 3
+    wave_length = 0
+    enemy_vel = 1
 
     player_vel = 5
     laser_vel = 4
@@ -192,7 +194,11 @@ def main():
         # draw text
         lives_label = main_font.render(f"Lives: {lives}", 1, (255,255,255))
         level_label = main_font.render(f"Level: {level}", 1, (255,255,255))
+        killed_label = main_font.render(f"Killed: {killed}", 1, (255,255,255))
 
+        # added a kill counter to keep track of how many total enemies there are per wave.
+
+        WIN.blit(killed_label, (10, 50))
         WIN.blit(lives_label, (10, 10))
         WIN.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
 
@@ -226,9 +232,10 @@ def main():
             level += 1
             wave_length += 5
             for i in range(wave_length):
-                enemies = []
-                enemy = Enemy(random.randrange(50, WIDTH-100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
-                enemies.append(enemy)
+                # enemies = []
+                # enemy = Enemy(random.randrange(50, WIDTH-100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
+                # enemies.append(enemy)
+                # enemies weren't increasing in the correct rate due to the wave_length variable being set to five.
                 if level == 1:
                     enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
                     enemies.append(enemy)
@@ -262,7 +269,11 @@ def main():
 
             if collide(enemy, player):
                 player.health -= 10
+                killed = 0
                 enemies.remove(enemy)
+                killed += 1
+
+
             elif enemy.y + enemy.get_height() > HEIGHT:
                 lives -= 1
                 enemies.remove(enemy)
