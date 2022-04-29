@@ -6,6 +6,9 @@ pygame.font.init()
 
 x = 1920
 y = 320
+
+killed = 0
+
 os.environ['SDL_VIDEO_WINDOW_POS'] = f"{x},{y}"
 
 WIDTH, HEIGHT = 1000, 1200
@@ -14,19 +17,23 @@ pygame.display.set_caption("Space Invaders")
 
 # Player Ship
 PLAYER_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","player_ship.png"))
-
+PLAYER_SIZE = (50, 50)
 # Enemy Ships
 XXSMALL_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xxs_gray.png"))
 XXSMALL_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xxs_black.png"))
+# XXSMALL_SIZE = (50, 50)
 XSMALL_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xs_gray.png"))
 XSMALL_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xs_black.png"))
+# XSMALL_SIZE = (55, 55)
 SMALL_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","small_gray.png"))
 SMALL_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","small_black.png"))
+# SMALL_SIZE = (60, 60)
 MEDIUM_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","m_gray.png"))
 MEDIUM_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","m_black.png"))
+# MEDIUM_SIZE = (80, 80)
 LARGE_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","l_gray.png"))
 LARGE_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","l_black.png"))
-
+# LARGE_SIZE = (100, 100)
 # Lasers
 RED_LASER_BULLETS = pygame.image.load(os.path.join("Lasers","red_laser.png"))
 BLUE_LASER_BULLETS = pygame.image.load(os.path.join("Lasers","blue_laser.png"))
@@ -35,6 +42,8 @@ BLUE_LASER_MISSLE = pygame.image.load(os.path.join("Lasers","blue_missle.png"))
 
 # Background
 BG = pygame.transform.scale(pygame.image.load(os.path.join("Background","space.png")), (WIDTH, HEIGHT))
+
+
 
 class Laser:
     def __init__(self, x, y, img):
@@ -57,7 +66,7 @@ class Laser:
 
 
 class Ship:
-    COOLDOWN = 30
+    COOLDOWN = 1
 
     def __init__(self, x, y, health=100):
         self.x = x
@@ -104,13 +113,16 @@ class Ship:
 
 
 
+
+
 class Player(Ship):
     def __init__(self, x, y, health=100):
         super().__init__(x, y, health)
-        self.ship_img = PLAYER_SPACE_SHIP
+        self.ship_img = pygame.transform.scale(PLAYER_SPACE_SHIP, PLAYER_SIZE)
         self.laser_img = BLUE_LASER_BULLETS
         self.mask = pygame.mask.from_surface(self.ship_img)
         self.max_health = health
+
 
     def move_lasers(self, vel, objs):
         self.cooldown()
@@ -122,11 +134,19 @@ class Player(Ship):
                 for obj in objs:
                     if laser.collision(obj):
                         objs.remove(obj)
-                        self.lasers.remove(laser)
+                        global killed
+                        killed += 1
+                        if laser in self.lasers:
+                            self.lasers.remove(laser)
+
+    # def damage(self):
+
+
+
 
     def shoot(self):
         if self.cool_down_counter == 0:
-            laser = Laser(self.x+52, self.y, self.laser_img)
+            laser = Laser(self.x+26, self.y, self.laser_img)
             self.lasers.append(laser)
             self.cool_down_counter = 1
 
@@ -145,12 +165,18 @@ class Enemy(Ship):
                 "s_gray": (SMALL_GRAY_SPACE_SHIP, RED_LASER_BULLETS),
                 "m_gray": (MEDIUM_GRAY_SPACE_SHIP, RED_LASER_MISSLE),
                 "l_gray": (LARGE_GRAY_SPACE_SHIP, RED_LASER_MISSLE),
+                "xxs_black": (XXSMALL_BLACK_SPACE_SHIP, RED_LASER_BULLETS),
+                "xs_black": (XSMALL_BLACK_SPACE_SHIP, RED_LASER_BULLETS),
+                "s_black": (SMALL_BLACK_SPACE_SHIP, RED_LASER_BULLETS),
+                "m_black": (MEDIUM_BLACK_SPACE_SHIP, RED_LASER_MISSLE),
+                "l_black": (LARGE_BLACK_SPACE_SHIP, RED_LASER_MISSLE)
                 }
 
     def __init__(self, x, y, color, health=100):
         super().__init__(x, y, health)
         self.ship_img, self.laser_img = self.COLOR_MAP[color]
         self.mask = pygame.mask.from_surface(self.ship_img)
+        self.max_health = health
 
     def move(self, vel):
         self.y += vel
@@ -160,6 +186,16 @@ class Enemy(Ship):
             laser = Laser(self.x+18, self.y, self.laser_img)
             self.lasers.append(laser)
             self.cool_down_counter = 1
+
+    def draw(self, window):
+        super().draw(window)
+        self.healthbar(window)
+
+    def healthbar(self, window):
+        pygame.draw.rect(window, (255,0,0), (self.x, self.y + self.ship_img.get_height() + 10, self.ship_img.get_width(), 10))
+        pygame.draw.rect(window, (0,255,0), (self.x, self.y + self.ship_img.get_height() + 10, self.ship_img.get_width() * (self.health/self.max_health), 10))
+
+
 
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
@@ -171,16 +207,17 @@ def main():
     FPS = 60
     level = 0
     lives = 5
-    killed = 0
+    crashed = 0
+
     main_font = pygame.font.SysFont("comicsans", 25)
     lost_font = pygame.font.SysFont("comicsans", 50)
 
     enemies = []
     wave_length = 0
-    enemy_vel = 1
+    enemy_vel = 4
 
-    player_vel = 5
-    laser_vel = 4
+    player_vel = 7.5
+    laser_vel = 7.5
 
     player = Player(450, 900)
 
@@ -194,18 +231,21 @@ def main():
         # draw text
         lives_label = main_font.render(f"Lives: {lives}", 1, (255,255,255))
         level_label = main_font.render(f"Level: {level}", 1, (255,255,255))
+        crash_label = main_font.render(f"Crashed: {crashed}", 1, (255,255,255))
         killed_label = main_font.render(f"Killed: {killed}", 1, (255,255,255))
 
         # added a kill counter to keep track of how many total enemies there are per wave.
-
-        WIN.blit(killed_label, (10, 50))
+        WIN.blit(killed_label, (10, 90))
+        WIN.blit(crash_label, (10, 50))
         WIN.blit(lives_label, (10, 10))
         WIN.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
+
 
         for enemy in enemies:
             enemy.draw(WIN)
 
         player.draw(WIN)
+
 
         if lost:
             lost_label = lost_font.render("You lost!!", 1, (255,255,255))
@@ -230,17 +270,54 @@ def main():
 
         if len(enemies) == 0:
             level += 1
-            wave_length += 5
+            wave_length += 2
             for i in range(wave_length):
-                # enemies = []
-                # enemy = Enemy(random.randrange(50, WIDTH-100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
-                # enemies.append(enemy)
+
                 # enemies weren't increasing in the correct rate due to the wave_length variable being set to five.
-                if level == 1:
+                if level <= 4:
                     enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
                     enemies.append(enemy)
-                elif level == 5:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray"]))
+                elif level <= 5:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray"]))
+                    enemies.append(enemy)
+                elif level <= 10:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray"]))
+                    enemies.append(enemy)
+                elif level <= 19:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray"]))
+                    enemies.append(enemy)
+                elif level <= 20:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_black", "xs_black", "s_black"]))
+                    enemies.append(enemy)
+                elif level <= 24:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_black", "xs_black", "s_black"]))
+                    enemies.append(enemy)
+                elif level <= 25:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_black", "m_black"]))
+                    enemies.append(enemy)
+                elif level <= 29:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_black", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level <= 30:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray", "l_gray", "xs_black", "s_black", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level <= 49:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray", "l_gray", "xs_black", "s_black", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level <= 50:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray", "s_black", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level <= 74:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray", "s_black", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level <= 75:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray", "l_gray", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level <= 99:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray", "l_gray", "m_black", "l_black"]))
+                    enemies.append(enemy)
+                elif level >= 100:
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["l_gray", "l_black"]))
                     enemies.append(enemy)
 
 
@@ -249,7 +326,7 @@ def main():
                 run = False
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player.x - player_vel >0: # left
+        if keys[pygame.K_a] and player.x - player_vel > 0: # left
             player.x -= player_vel
         if keys[pygame.K_d] and player.x + player_vel + player.get_width() < WIDTH: # right
             player.x += player_vel
@@ -269,10 +346,9 @@ def main():
 
             if collide(enemy, player):
                 player.health -= 10
-                killed = 0
+                crashed = 0
                 enemies.remove(enemy)
-                killed += 1
-
+                crashed += 1
 
             elif enemy.y + enemy.get_height() > HEIGHT:
                 lives -= 1
@@ -280,6 +356,8 @@ def main():
 
 
         player.move_lasers(-laser_vel, enemies)
+
+
 
 def main_menu():
     title_font = pygame.font.SysFont("comicsans", 70)
