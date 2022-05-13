@@ -18,22 +18,23 @@ pygame.display.set_caption("Space Invaders")
 # Player Ship
 PLAYER_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","player_ship.png"))
 PLAYER_SIZE = (50, 50)
+
 # Enemy Ships
-XXSMALL_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xxs_gray.png"))
-XXSMALL_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xxs_black.png"))
-# XXSMALL_SIZE = (50, 50)
-XSMALL_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xs_gray.png"))
-XSMALL_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","xs_black.png"))
-# XSMALL_SIZE = (55, 55)
-SMALL_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","small_gray.png"))
-SMALL_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","small_black.png"))
-# SMALL_SIZE = (60, 60)
-MEDIUM_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","m_gray.png"))
-MEDIUM_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","m_black.png"))
-# MEDIUM_SIZE = (80, 80)
-LARGE_GRAY_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","l_gray.png"))
-LARGE_BLACK_SPACE_SHIP = pygame.image.load(os.path.join("SpaceshipImages","l_black.png"))
-# LARGE_SIZE = (100, 100)
+XXSMALL_GRAY_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","xxs_gray.png")), (40, 40))
+XXSMALL_BLACK_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","xxs_black.png")), (40, 40))
+
+XSMALL_GRAY_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","xs_gray.png")), (45, 45))
+XSMALL_BLACK_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","xs_black.png")), (45, 45))
+
+SMALL_GRAY_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","small_gray.png")), (50, 50))
+SMALL_BLACK_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","small_black.png")), (50, 50))
+
+MEDIUM_GRAY_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","m_gray.png")), (80, 70))
+MEDIUM_BLACK_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","m_black.png")), (80, 70))
+
+LARGE_GRAY_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","l_gray.png")), (100, 90))
+LARGE_BLACK_SPACE_SHIP = pygame.transform.scale(pygame.image.load(os.path.join("SpaceshipImages","l_black.png")), (100, 90))
+
 # Lasers
 RED_LASER_BULLETS = pygame.image.load(os.path.join("Lasers","red_laser.png"))
 BLUE_LASER_BULLETS = pygame.image.load(os.path.join("Lasers","blue_laser.png"))
@@ -90,7 +91,9 @@ class Ship:
                 self.lasers.remove(laser)
             elif laser.collision(obj):
                 obj.health -= 10
+                print(obj.health)
                 self.lasers.remove(laser)
+
 
     def cooldown(self):
         if self.cool_down_counter >= self.COOLDOWN:
@@ -124,22 +127,21 @@ class Player(Ship):
         self.max_health = health
 
 
-    def move_lasers(self, vel, objs):
+    def move_lasers(self, vel, enemies):
         self.cooldown()
         for laser in self.lasers:
             laser.move(vel)
             if laser.off_screen(HEIGHT):
                 self.lasers.remove(laser)
             else:
-                for obj in objs:
-                    if laser.collision(obj):
-                        objs.remove(obj)
-                        global killed
-                        killed += 1
-                        if laser in self.lasers:
-                            self.lasers.remove(laser)
-
-    # def damage(self):
+                for enemy in enemies:
+                    if laser.collision(enemy):
+                        enemy.max_health -= 10
+                        self.lasers.remove(laser)
+                        if enemy.max_health <= 0:
+                            enemies.remove(enemy)
+                            global killed
+                            killed += 1
 
 
 
@@ -181,6 +183,7 @@ class Enemy(Ship):
     def move(self, vel):
         self.y += vel
 
+
     def shoot(self):
         if self.cool_down_counter == 0:
             laser = Laser(self.x+18, self.y, self.laser_img)
@@ -193,8 +196,7 @@ class Enemy(Ship):
 
     def healthbar(self, window):
         pygame.draw.rect(window, (255,0,0), (self.x, self.y + self.ship_img.get_height() + 10, self.ship_img.get_width(), 10))
-        pygame.draw.rect(window, (0,255,0), (self.x, self.y + self.ship_img.get_height() + 10, self.ship_img.get_width() * (self.health/self.max_health), 10))
-
+        pygame.draw.rect(window, (0,255,0), (self.x, self.y + self.ship_img.get_height() + 10, self.ship_img.get_width() * (self.max_health/self.health), 10))
 
 
 def collide(obj1, obj2):
@@ -214,7 +216,7 @@ def main():
 
     enemies = []
     wave_length = 0
-    enemy_vel = 4
+    enemy_vel = 2
 
     player_vel = 7.5
     laser_vel = 7.5
@@ -277,6 +279,7 @@ def main():
                 if level <= 4:
                     enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
                     enemies.append(enemy)
+
                 elif level <= 5:
                     enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray"]))
                     enemies.append(enemy)
@@ -337,9 +340,13 @@ def main():
         if keys[pygame.K_SPACE]:
             player.shoot()
 
+
+
         for enemy in enemies[:]:
             enemy.move(enemy_vel)
             enemy.move_lasers(laser_vel, player)
+
+
 
             if random.randrange(0, 4*60) == 1:
                 enemy.shoot()
