@@ -67,7 +67,7 @@ class Laser:
 
 
 class Ship:
-    COOLDOWN = 1
+    COOLDOWN = 10
 
     def __init__(self, x, y, health=100):
         self.x = x
@@ -136,7 +136,7 @@ class Player(Ship):
             else:
                 for enemy in enemies:
                     if laser.collision(enemy):
-                        enemy.max_health -= 10
+                        enemy.max_health -= 25
                         self.lasers.remove(laser)
                         if enemy.max_health <= 0:
                             enemies.remove(enemy)
@@ -218,8 +218,8 @@ def main():
     wave_length = 0
     enemy_vel = 2
 
-    player_vel = 7.5
-    laser_vel = 7.5
+    player_vel = 6
+    laser_vel = 6
 
     player = Player(450, 900)
 
@@ -277,56 +277,59 @@ def main():
 
                 # enemies weren't increasing in the correct rate due to the wave_length variable being set to five.
                 if level <= 4:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]), 100)
                     enemies.append(enemy)
 
                 elif level <= 5:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray"]), 100)
                     enemies.append(enemy)
                 elif level <= 10:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray"]), 150)
                     enemies.append(enemy)
                 elif level <= 19:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray"]), 200)
                     enemies.append(enemy)
                 elif level <= 20:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_black", "xs_black", "s_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_black", "xs_black", "s_black"]), 150)
                     enemies.append(enemy)
                 elif level <= 24:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_black", "xs_black", "s_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_black", "xs_black", "s_black"]), 150)
                     enemies.append(enemy)
                 elif level <= 25:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_black", "m_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_black", "m_black"]), 200)
                     enemies.append(enemy)
                 elif level <= 29:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_black", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_black", "m_black", "l_black"]), 250)
                     enemies.append(enemy)
                 elif level <= 30:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray", "l_gray", "xs_black", "s_black", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray", "l_gray", "xs_black", "s_black", "m_black", "l_black"]), 300)
                     enemies.append(enemy)
                 elif level <= 49:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray", "l_gray", "xs_black", "s_black", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray", "l_gray", "xs_black", "s_black", "m_black", "l_black"]), 300)
                     enemies.append(enemy)
                 elif level <= 50:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray", "s_black", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray", "s_black", "m_black", "l_black"]), 350)
                     enemies.append(enemy)
                 elif level <= 74:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray", "s_black", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["s_gray", "m_gray", "l_gray", "s_black", "m_black", "l_black"]), 350)
                     enemies.append(enemy)
                 elif level <= 75:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray", "l_gray", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray", "l_gray", "m_black", "l_black"]), 400)
                     enemies.append(enemy)
                 elif level <= 99:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray", "l_gray", "m_black", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["m_gray", "l_gray", "m_black", "l_black"]), 400)
                     enemies.append(enemy)
                 elif level >= 100:
-                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["l_gray", "l_black"]))
+                    enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["l_gray", "l_black"]), 500)
                     enemies.append(enemy)
 
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                global killed
+                killed= 0
+                print("quit")
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a] and player.x - player_vel > 0: # left
@@ -375,6 +378,7 @@ def main_menu():
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, 350))
         pygame.display.update()
         for event in pygame.event.get():
+            # print("Event register")
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
