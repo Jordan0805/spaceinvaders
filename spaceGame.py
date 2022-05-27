@@ -279,7 +279,6 @@ def main():
                 if level <= 4:
                     enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xxs_gray", "xs_gray", "s_gray"]), 100)
                     enemies.append(enemy)
-
                 elif level <= 5:
                     enemy = Enemy(random.randrange(50, WIDTH - 100), random.randrange(-1500, -100), random.choice(["xs_gray", "s_gray", "m_gray"]), 100)
                     enemies.append(enemy)
@@ -328,7 +327,7 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
                 global killed
-                killed= 0
+                killed = 0
                 print("quit")
 
         keys = pygame.key.get_pressed()
